@@ -78,14 +78,26 @@ namespace MasterPuzzleWall
                 titleLogoRect.DOScale(Vector3.one, 0.6f).SetEase(Ease.OutBack);
             }
 
+            if (starterGemRect != null)
+            {
+                starterGemRect.localScale = Vector3.zero;
+                starterGemRect.DOScale(Vector3.one, 0.5f).SetDelay(0.2f).SetEase(Ease.OutBack);
+            }
+
+            if (gemPromptBadgeRect != null)
+            {
+                gemPromptBadgeRect.localScale = Vector3.zero;
+                gemPromptBadgeRect.DOScale(Vector3.one, 0.5f).SetDelay(0.35f).SetEase(Ease.OutBack);
+            }
+
             if (playButton != null)
             {
                 playButton.transform.localScale = Vector3.zero;
                 playButton.transform.DOScale(Vector3.one, 0.5f).SetDelay(0.3f).SetEase(Ease.OutBack);
             }
 
-            GameManager.Instance?.GolemBot.Wave();
-            GameManager.Instance?.GolemBot.Speak(
+            GameManager.Instance?.GolemBot?.Wave();
+            GameManager.Instance?.GolemBot?.Speak(
                 "Welcome to the Master Puzzle Wall! Press the glowing starter gem to begin your run!",
                 4.5f
             );

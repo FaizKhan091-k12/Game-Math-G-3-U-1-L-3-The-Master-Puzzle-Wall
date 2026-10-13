@@ -58,8 +58,16 @@ namespace MasterPuzzleWall
             if (botImage != null && normalSprite != null)
                 botImage.sprite = normalSprite;
 
-            botRect.DOPunchScale(new Vector3(0.2f, 0.2f, 0), 0.6f, 4, 0.4f);
-            botRect.DOPunchPosition(new Vector3(0, 30f, 0), 0.6f, 3, 0.3f);
+            if (botRect != null)
+            {
+                botRect.DOKill();
+                botRect.DOPunchScale(new Vector3(0.28f, 0.28f, 0), 0.75f, 4, 0.4f);
+                botRect.DOPunchPosition(new Vector3(0, 40f, 0), 0.75f, 3, 0.3f);
+                botRect.DOPunchRotation(new Vector3(0, 0, 16f), 0.75f, 4, 0.4f).OnComplete(() =>
+                {
+                    StartIdleAnimation();
+                });
+            }
         }
 
         public void SetConfused(bool isConfused)
@@ -69,7 +77,12 @@ namespace MasterPuzzleWall
             if (isConfused)
             {
                 if (confusedSprite != null) botImage.sprite = confusedSprite;
-                botRect.DOPunchRotation(new Vector3(0, 0, -12f), 0.8f, 3, 0.5f);
+                if (botRect != null)
+                {
+                    botRect.DOKill();
+                    botRect.DOPunchRotation(new Vector3(0, 0, -14f), 0.8f, 3, 0.5f);
+                    botRect.DOPunchPosition(new Vector3(-6f, -10f, 0), 0.8f, 2, 0.3f);
+                }
             }
             else
             {
@@ -77,9 +90,25 @@ namespace MasterPuzzleWall
             }
         }
 
+        public void Shiver()
+        {
+            if (botRect == null) return;
+            botRect.DOKill();
+            botRect.DOShakePosition(0.7f, new Vector3(10f, 0, 0), 25, 90f).OnComplete(() =>
+            {
+                StartIdleAnimation();
+            });
+        }
+
         public void Speak(string text, float duration = 0, System.Action onComplete = null)
         {
             if (speechBubbleRoot != null) speechBubbleRoot.SetActive(true);
+            if (speechText != null)
+            {
+                speechText.enableAutoSizing = true;
+                speechText.fontSizeMin = 14;
+                speechText.fontSizeMax = 20;
+            }
             if (speechBubbleGroup != null)
             {
                 speechBubbleGroup.alpha = 0f;

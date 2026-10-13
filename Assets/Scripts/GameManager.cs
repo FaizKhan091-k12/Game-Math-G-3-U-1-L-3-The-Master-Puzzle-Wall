@@ -57,12 +57,22 @@ namespace MasterPuzzleWall
 
         private readonly string[] loudReaderPrompts = new string[]
         {
-            "Look at the left side of the wall! The vertical frost slot is glowing. We need to drop the temperature to exactly 4 steps below the zero mark to clear the ice. Grab the glowing slider gem and pull it straight down past the white zero line until it sits on -4!",
+            "Look at the left side of the wall! The vertical frost slot is glowing. We need to drop the temperature to exactly 4 steps below the zero mark to clear the ice.",
             "Now, look right below the slider at the horizontal stone shelf. Three code keys have appeared out of order. We must line them up from the smallest number to the biggest number. Slide the keys so they go from the lowest minus number up to the normal positive number!",
             "Move your eyes to the lower middle part of the wall. A twin-prong socket is flashing! It needs an even number plug to match its double slots. Look at the tokens: 17 and 24. Which number ends in a balanced, even digit? Tap the right plug token!",
             "Look over at the right side of the wall. A large square space has opened up! We need to fill it with a square number block that has the exact same number of rows and columns. Choose from the blocks below: 12, 16, or 18. Which block forms a perfect square shape?",
             "Look right at the dead center of the wall! The big stone wheel is spinning with 18 slots on its ring. We must plug in a key peg that fits inside 18 perfectly with no empty spaces left behind. Look at pegs 4, 3, and 8. Which divides into 18 with nothing left over?",
             "We are at the final code bar at the very bottom of the wall! The master puzzle window ends with a zero digit [ ___ 0 ]. What is always true about any whole number that ends with a zero? Choose the master rule plaque to open the wall!"
+        };
+
+        private readonly string[] golemDialoguePrompts = new string[]
+        {
+            "Grab the glowing slider gem and pull it straight down past the white zero line! Slide it down until it sits on the minus number -4.",
+            "Sort the three stone keys from coldest to warmest !",
+            "Tap the even number token that splits into two equal parts!",
+            "Which number block forms a perfect square grid? Drag it in!",
+            "Spin the wheel and pick the peg that divides cleanly into 18!",
+            "Any number ending in 0 divides cleanly by 10! Pick the master rule!"
         };
 
         private readonly string[] successFeedbacks = new string[]
@@ -80,8 +90,31 @@ namespace MasterPuzzleWall
             if (Instance == null) Instance = this;
             else Destroy(gameObject);
 
+            AutoWireReferences();
+
             if (homeButton != null) homeButton.onClick.AddListener(ShowMainMenu);
             if (restartTaskButton != null) restartTaskButton.onClick.AddListener(() => StartGame(CurrentTaskIndex));
+        }
+
+        private void AutoWireReferences()
+        {
+            if (mainMenu == null) mainMenu = FindFirstObjectByType<MainMenuController>(FindObjectsInactive.Include);
+            if (GolemBot == null) GolemBot = FindFirstObjectByType<HelperBotController>(FindObjectsInactive.Include);
+            if (victoryPanel == null) victoryPanel = FindFirstObjectByType<VictoryPanel>(FindObjectsInactive.Include);
+            if (failPanel == null) failPanel = FindFirstObjectByType<FailPanel>(FindObjectsInactive.Include);
+
+            if (task1FrostSlider == null) task1FrostSlider = FindFirstObjectByType<FrostSliderTask>(FindObjectsInactive.Include);
+            if (task2IceShelf == null) task2IceShelf = FindFirstObjectByType<IceShelfTask>(FindObjectsInactive.Include);
+            if (task3TwinProng == null) task3TwinProng = FindFirstObjectByType<TwinProngTask>(FindObjectsInactive.Include);
+            if (task4SquareTile == null) task4SquareTile = FindFirstObjectByType<SquareTileTask>(FindObjectsInactive.Include);
+            if (task5FactorWheel == null) task5FactorWheel = FindFirstObjectByType<FactorWheelTask>(FindObjectsInactive.Include);
+            if (task6BaseTenCode == null) task6BaseTenCode = FindFirstObjectByType<BaseTenCodeTask>(FindObjectsInactive.Include);
+
+            if (topHudRoot == null)
+            {
+                var hudObj = GameObject.Find("TopHUD");
+                if (hudObj != null) topHudRoot = hudObj;
+            }
         }
 
         private void Start()
@@ -102,8 +135,21 @@ namespace MasterPuzzleWall
 
         public void ShowMainMenu()
         {
+            StopAllCoroutines();
             CurrentTaskIndex = -1;
             HideAllTasks();
+            UpdateWallPanelHighlights(-1);
+
+            if (screenFlashImage != null)
+            {
+                screenFlashImage.DOKill();
+                screenFlashImage.color = new Color(1, 1, 1, 0);
+                screenFlashImage.gameObject.SetActive(false);
+            }
+
+            if (ambientDustParticles != null) ambientDustParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            if (taskCompleteBurst != null) taskCompleteBurst.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             if (topHudRoot != null) topHudRoot.SetActive(false);
             if (victoryPanel != null)
             {
@@ -116,6 +162,7 @@ namespace MasterPuzzleWall
 
         public void StartGame(int startTaskIndex = 0)
         {
+            StopAllCoroutines();
             if (mainMenu != null) mainMenu.gameObject.SetActive(false);
             if (victoryPanel != null)
             {
@@ -125,12 +172,14 @@ namespace MasterPuzzleWall
             if (failPanel != null) failPanel.gameObject.SetActive(false);
 
             if (topHudRoot != null) topHudRoot.SetActive(true);
+            if (startTaskIndex == 0) ScoreManager.Instance?.ResetScore();
 
             LoadTask(startTaskIndex);
         }
 
         public void LoadTask(int index)
         {
+            StopAllCoroutines();
             CurrentTaskIndex = Mathf.Clamp(index, 0, 5);
             HideAllTasks();
 
@@ -138,12 +187,12 @@ namespace MasterPuzzleWall
             if (taskTitleText != null) taskTitleText.text = taskTitles[CurrentTaskIndex];
             if (loudReaderPromptText != null) loudReaderPromptText.text = loudReaderPrompts[CurrentTaskIndex];
 
-            // Update Wall Glowing Highlight (moving across panels from left to right)
+            // Update Wall Glowing Highlight (strictly active only for current level)
             UpdateWallPanelHighlights(CurrentTaskIndex);
 
-            // Golem speech prompt
-            GolemBot.Cheer();
-            GolemBot.Speak(loudReaderPrompts[CurrentTaskIndex], 6.5f);
+            // Golem speech prompt (punchy & kid-friendly)
+            GolemBot?.Cheer();
+            GolemBot?.Speak(golemDialoguePrompts[CurrentTaskIndex], 5.0f);
 
             // Activate specific task
             switch (CurrentTaskIndex)
@@ -208,25 +257,41 @@ namespace MasterPuzzleWall
             if (active)
             {
                 glowImg.gameObject.SetActive(true);
-                glowImg.color = new Color(glowImg.color.r, glowImg.color.g, glowImg.color.b, 0.25f);
-                glowImg.DOFade(0.85f, 0.9f).SetLoops(-1, LoopType.Yoyo);
+                glowImg.color = new Color(glowImg.color.r, glowImg.color.g, glowImg.color.b, 0.05f);
+                glowImg.DOFade(0.18f, 1.2f).SetLoops(-1, LoopType.Yoyo);
             }
             else
             {
-                glowImg.DOFade(0f, 0.4f).OnComplete(() => glowImg.gameObject.SetActive(false));
+                glowImg.color = new Color(glowImg.color.r, glowImg.color.g, glowImg.color.b, 0f);
+                glowImg.gameObject.SetActive(false);
             }
         }
 
         public void TriggerScreenFlash(Color color)
         {
             if (screenFlashImage == null) return;
+            screenFlashImage.gameObject.SetActive(true);
             screenFlashImage.color = color;
             screenFlashImage.DOKill();
-            screenFlashImage.DOFade(0.4f, 0.1f).OnComplete(() => screenFlashImage.DOFade(0f, 0.35f));
+            screenFlashImage.DOFade(0.4f, 0.1f).OnComplete(() =>
+            {
+                screenFlashImage.DOFade(0f, 0.35f).OnComplete(() =>
+                {
+                    screenFlashImage.gameObject.SetActive(false);
+                });
+            });
         }
 
         private void OnTaskSuccess(int taskIdx)
         {
+            int[] rewards = new int[] { 0, 750, 750, 1000, 1000, 1500 };
+            string[] labels = new string[] { "", "ORDER RESTORED!", "SOCKET POWERED!", "SQUARE MATRIX!", "FACTOR PEG MATCH!", "MASTER CODE OPEN!" };
+            if (taskIdx > 0 && rewards[taskIdx] > 0)
+            {
+                ScoreManager.Instance?.AddScore(rewards[taskIdx], labels[taskIdx]);
+                ScoreManager.Instance?.IncreaseCombo();
+            }
+
             StartCoroutine(TaskSuccessSequence(taskIdx));
         }
 
@@ -274,6 +339,40 @@ namespace MasterPuzzleWall
             if (task4SquareTile != null) task4SquareTile.gameObject.SetActive(false);
             if (task5FactorWheel != null) task5FactorWheel.gameObject.SetActive(false);
             if (task6BaseTenCode != null) task6BaseTenCode.gameObject.SetActive(false);
+        }
+
+        public void StartBackgroundAnimations()
+        {
+            Image[] conduits = new Image[] { leftPanelGlow, middlePanelGlow, rightPanelGlow, bottomBarGlow };
+            for (int i = 0; i < conduits.Length; i++)
+            {
+                Image img = conduits[i];
+                if (img == null) continue;
+
+                float delay = i * 0.4f;
+                img.color = new Color(img.color.r, img.color.g, img.color.b, 0.15f);
+                img.DOFade(0.6f, 2.4f)
+                    .SetDelay(delay)
+                    .SetEase(Ease.InOutSine)
+                    .SetLoops(-1, LoopType.Yoyo);
+            }
+        }
+
+        public void PulseEnergyWave()
+        {
+            Image[] conduits = new Image[] { leftPanelGlow, middlePanelGlow, rightPanelGlow, bottomBarGlow };
+            for (int i = 0; i < conduits.Length; i++)
+            {
+                Image img = conduits[i];
+                if (img != null)
+                {
+                    img.DOKill();
+                    img.DOFade(0.9f, 0.25f).SetLoops(2, LoopType.Yoyo).OnComplete(() =>
+                    {
+                        StartBackgroundAnimations();
+                    });
+                }
+            }
         }
     }
 }

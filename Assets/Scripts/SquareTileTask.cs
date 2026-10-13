@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -22,18 +22,48 @@ namespace MasterPuzzleWall
 
         [Header("Visual Grid 4x4 In Slot")]
         public GameObject solved4x4GridDisplay;
+        public ParticleSystem confettiParticles;
 
         [Header("State")]
         public bool isCompleted = false;
         public Action onTaskCompleted;
 
+        private Vector2 defaultPos12 = new Vector2(-160, -95);
+        private Vector2 defaultPos16 = new Vector2(0, -95);
+        private Vector2 defaultPos18 = new Vector2(160, -95);
+        private bool positionsCached = false;
+
+        private void Awake()
+        {
+            CachePositions();
+        }
+
+        private void CachePositions()
+        {
+            if (!positionsCached)
+            {
+                if (block12Rect != null) defaultPos12 = block12Rect.anchoredPosition;
+                if (block16Rect != null) defaultPos16 = block16Rect.anchoredPosition;
+                if (block18Rect != null) defaultPos18 = block18Rect.anchoredPosition;
+                positionsCached = true;
+            }
+        }
+
         public void InitializeTask()
         {
+            CachePositions();
             isCompleted = false;
+
             if (solved4x4GridDisplay != null) solved4x4GridDisplay.SetActive(false);
+            if (confettiParticles != null) confettiParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
+            ResetBlock(block12Rect, defaultPos12);
+            ResetBlock(block16Rect, defaultPos16);
+            ResetBlock(block18Rect, defaultPos18);
 
             if (slotGreenGlow != null)
             {
+                slotGreenGlow.DOKill();
                 slotGreenGlow.gameObject.SetActive(true);
                 slotGreenGlow.color = new Color(0.2f, 1f, 0.4f, 0.3f);
                 slotGreenGlow.DOFade(0.85f, 0.9f).SetLoops(-1, LoopType.Yoyo);
@@ -42,6 +72,21 @@ namespace MasterPuzzleWall
             SetupButton(block12Button, () => OnWrongBlockClicked(block12Rect, 12, "3x4"));
             SetupButton(block18Button, () => OnWrongBlockClicked(block18Rect, 18, "3x6"));
             SetupButton(block16Button, OnCorrectBlockClicked);
+        }
+
+        private void ResetBlock(RectTransform rt, Vector2 defaultPos)
+        {
+            if (rt == null) return;
+            rt.DOKill();
+            rt.anchoredPosition = defaultPos;
+            rt.localScale = Vector3.one;
+            var cg = rt.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.DOKill();
+                cg.alpha = 1f;
+                cg.blocksRaycasts = true;
+            }
         }
 
         private void SetupButton(Button btn, UnityEngine.Events.UnityAction action)
@@ -91,10 +136,12 @@ namespace MasterPuzzleWall
                         {
                             SoundManager.Instance.PlaySnap();
                             SoundManager.Instance.PlayChime();
+                            SoundManager.Instance.PlayFanfare();
                         }
 
                         if (solved4x4GridDisplay != null) solved4x4GridDisplay.SetActive(true);
                         block16Rect.DOPunchScale(Vector3.one * 0.2f, 0.4f, 4, 0.5f);
+                        if (confettiParticles != null) confettiParticles.Play();
 
                         if (slotGreenGlow != null)
                         {
@@ -102,7 +149,12 @@ namespace MasterPuzzleWall
                             slotGreenGlow.color = new Color(0.2f, 1f, 0.4f, 1f);
                         }
 
-                        onTaskCompleted?.Invoke();
+                        ScoreManager.Instance?.AddScore(150, "SQUARE NUMBER 16 FITTED!");
+
+                        DOVirtual.DelayedCall(1.8f, () =>
+                        {
+                            onTaskCompleted?.Invoke();
+                        });
                     });
             }
         }

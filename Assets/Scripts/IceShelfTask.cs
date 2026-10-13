@@ -17,6 +17,10 @@ namespace MasterPuzzleWall
         [Header("Key Blocks")]
         public KeyBlockItem[] keyBlocks; // 3 blocks: values 2, -4, -1
 
+        [Header("Effects & Feedback")]
+        public ParticleSystem confettiParticles;
+        public HelperBotController golemBot;
+
         [Header("State")]
         public bool isCompleted = false;
         public Action onTaskCompleted;
@@ -24,17 +28,34 @@ namespace MasterPuzzleWall
         public void InitializeTask()
         {
             isCompleted = false;
+            if (confettiParticles != null) confettiParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+
             if (shelfGlowImage != null)
             {
-                shelfGlowImage.color = new Color(1f, 0.85f, 0.3f, 0.2f);
-                shelfGlowImage.DOFade(0.7f, 1f).SetLoops(-1, LoopType.Yoyo);
+                shelfGlowImage.DOKill();
+                shelfGlowImage.rectTransform.localScale = Vector3.one;
+                shelfGlowImage.color = new Color(0.2f, 0.8f, 1f, 0.35f);
+                shelfGlowImage.DOFade(0.8f, 1.2f).SetLoops(-1, LoopType.Yoyo);
+            }
+
+            if (golemBot == null)
+            {
+                golemBot = FindFirstObjectByType<HelperBotController>();
+            }
+
+            if (golemBot != null)
+            {
+                golemBot.Cheer();
+                golemBot.Speak("Sort the three frozen keys from coldest (-4) up to warmest (+2)!", 5f);
             }
 
             // Initial scrambled arrangement: Slot 0 = 2, Slot 1 = -4, Slot 2 = -1
             int[] initialValues = new int[] { 2, -4, -1 };
             for (int i = 0; i < keyBlocks.Length && i < slotPositions.Length; i++)
             {
+                keyBlocks[i].ResetItem();
                 keyBlocks[i].Setup(this, initialValues[i], i);
+                keyBlocks[i].transform.DOKill();
                 keyBlocks[i].transform.position = slotPositions[i].position;
             }
         }
@@ -72,15 +93,20 @@ namespace MasterPuzzleWall
                 // Swap slots
                 int oldSlot = draggedBlock.currentSlotIndex;
                 occupant.currentSlotIndex = oldSlot;
-                occupant.transform.DOMove(slotPositions[oldSlot].position, 0.25f).SetEase(Ease.OutBack);
+                occupant.transform.DOKill();
+                occupant.transform.DOMove(slotPositions[oldSlot].position, 0.2f).SetEase(Ease.OutBack)
+                    .OnComplete(() => { if (occupant != null) occupant.transform.position = slotPositions[oldSlot].position; });
             }
 
             draggedBlock.currentSlotIndex = bestSlot;
-            draggedBlock.transform.DOMove(slotPositions[bestSlot].position, 0.25f).SetEase(Ease.OutBack);
-
-            if (SoundManager.Instance != null) SoundManager.Instance.PlaySnap();
-
-            CheckOrder();
+            draggedBlock.transform.DOKill();
+            draggedBlock.transform.DOMove(slotPositions[bestSlot].position, 0.2f).SetEase(Ease.OutBack)
+                .OnComplete(() =>
+                {
+                    if (draggedBlock != null) draggedBlock.transform.position = slotPositions[bestSlot].position;
+                    if (SoundManager.Instance != null) SoundManager.Instance.PlaySnap();
+                    CheckOrder();
+                });
         }
 
         private void CheckOrder()
@@ -95,7 +121,7 @@ namespace MasterPuzzleWall
                 }
             }
 
-            // Correct order: -4, -1, 2
+            // Correct order: -4 (least/coldest), -1 (middle), 2 (greatest/warmest)
             if (currentOrder[0] == -4 && currentOrder[1] == -1 && currentOrder[2] == 2)
             {
                 Success();
@@ -104,26 +130,50 @@ namespace MasterPuzzleWall
 
         private void Success()
         {
+            if (isCompleted) return;
             isCompleted = true;
+
+            // Enforce exact alignment on slots
+            for (int i = 0; i < keyBlocks.Length && i < slotPositions.Length; i++)
+            {
+                if (keyBlocks[i] != null && keyBlocks[i].currentSlotIndex >= 0 && keyBlocks[i].currentSlotIndex < slotPositions.Length)
+                {
+                    keyBlocks[i].transform.DOKill();
+                    keyBlocks[i].transform.position = slotPositions[keyBlocks[i].currentSlotIndex].position;
+                    keyBlocks[i].SetLocked();
+                }
+            }
+
             if (SoundManager.Instance != null)
             {
                 SoundManager.Instance.PlayChime();
-                SoundManager.Instance.PlayMagicHum();
+                SoundManager.Instance.PlayFanfare();
+            }
+
+            if (confettiParticles != null)
+            {
+                confettiParticles.Play();
             }
 
             if (shelfGlowImage != null)
             {
                 shelfGlowImage.DOKill();
-                shelfGlowImage.color = new Color(1f, 0.9f, 0.2f, 1f);
+                shelfGlowImage.color = new Color(1f, 0.88f, 0.2f, 1f);
                 shelfGlowImage.rectTransform.DOPunchScale(Vector3.one * 0.1f, 0.5f, 3, 0.5f);
             }
 
-            foreach (var block in keyBlocks)
+            if (golemBot != null)
             {
-                block.SetLocked();
+                golemBot.Cheer();
+                golemBot.Speak("Perfect! -4 is coldest, -1 is next, and +2 is warmest! The shelf is unlocked!", 5.5f);
             }
 
-            onTaskCompleted?.Invoke();
+            ScoreManager.Instance?.AddScore(150, "COLD TO WARM ALIGNED!");
+
+            DOVirtual.DelayedCall(1.8f, () =>
+            {
+                onTaskCompleted?.Invoke();
+            });
         }
     }
 }

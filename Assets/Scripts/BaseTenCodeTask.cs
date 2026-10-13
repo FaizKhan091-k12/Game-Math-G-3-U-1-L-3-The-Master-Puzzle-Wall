@@ -26,8 +26,38 @@ namespace MasterPuzzleWall
         public bool isCompleted = false;
         public Action onTaskCompleted;
 
+        private Vector2 defaultPosOdd = new Vector2(-160, -90);
+        private Vector2 defaultPos10 = new Vector2(0, -90);
+        private Vector2 defaultPosLess = new Vector2(160, -90);
+        private Vector2 defaultPosCodeBar = new Vector2(0, -220);
+        private Color defaultPlaqueColor = new Color(0.12f, 0.22f, 0.35f, 0.95f);
+        private bool positionsCached = false;
+
+        private void Awake()
+        {
+            CachePositions();
+        }
+
+        private void CachePositions()
+        {
+            if (!positionsCached)
+            {
+                if (plaqueOddRect != null) defaultPosOdd = plaqueOddRect.anchoredPosition;
+                if (plaqueDivide10Rect != null)
+                {
+                    defaultPos10 = plaqueDivide10Rect.anchoredPosition;
+                    var img = plaqueDivide10Rect.GetComponent<Image>();
+                    if (img != null) defaultPlaqueColor = img.color;
+                }
+                if (plaqueLessThan10Rect != null) defaultPosLess = plaqueLessThan10Rect.anchoredPosition;
+                if (codeBarRect != null) defaultPosCodeBar = codeBarRect.anchoredPosition;
+                positionsCached = true;
+            }
+        }
+
         public void InitializeTask()
         {
+            CachePositions();
             isCompleted = false;
 
             if (promptDisplayText != null)
@@ -35,27 +65,58 @@ namespace MasterPuzzleWall
                 promptDisplayText.text = "<size=75%>ANY NUMBER ENDING IN ZERO:</size>\n<b>[ ___ 0 ]</b>";
             }
 
+            ResetPlaque(plaqueOddRect, defaultPosOdd);
+            ResetPlaque(plaqueDivide10Rect, defaultPos10);
+            ResetPlaque(plaqueLessThan10Rect, defaultPosLess);
+
+            if (plaqueDivide10Rect != null)
+            {
+                var img = plaqueDivide10Rect.GetComponent<Image>();
+                if (img != null) img.color = defaultPlaqueColor;
+            }
+
+            if (codeBarRect != null)
+            {
+                codeBarRect.DOKill();
+                codeBarRect.anchoredPosition = defaultPosCodeBar;
+            }
+
             if (codeBarGlow != null)
             {
+                codeBarGlow.DOKill();
                 codeBarGlow.gameObject.SetActive(true);
                 codeBarGlow.color = new Color(1f, 0.85f, 0.2f, 0.3f);
                 codeBarGlow.DOFade(0.85f, 0.8f).SetLoops(-1, LoopType.Yoyo);
             }
 
             // Animate plaques lifting up from stone base
-            AnimatePlaqueEntrance(plaqueOddRect, 0.0f);
-            AnimatePlaqueEntrance(plaqueDivide10Rect, 0.15f);
-            AnimatePlaqueEntrance(plaqueLessThan10Rect, 0.3f);
+            AnimatePlaqueEntrance(plaqueOddRect, defaultPosOdd, 0.0f);
+            AnimatePlaqueEntrance(plaqueDivide10Rect, defaultPos10, 0.15f);
+            AnimatePlaqueEntrance(plaqueLessThan10Rect, defaultPosLess, 0.3f);
 
             SetupPlaque(plaqueOddButton, () => OnWrongPlaqueClicked(plaqueOddRect, "Numbers ending in 0 (like 10, 20, 30) are EVEN, not odd!"));
             SetupPlaque(plaqueLessThan10Button, () => OnWrongPlaqueClicked(plaqueLessThan10Rect, "Numbers ending in 0 can be huge, like 50, 100, or 1000! They are not always less than 10!"));
             SetupPlaque(plaqueDivide10Button, OnCorrectPlaqueClicked);
         }
 
-        private void AnimatePlaqueEntrance(RectTransform rt, float delay)
+        private void ResetPlaque(RectTransform rt, Vector2 targetPos)
         {
             if (rt == null) return;
-            Vector2 targetPos = rt.anchoredPosition;
+            rt.DOKill();
+            rt.anchoredPosition = targetPos;
+            rt.localScale = Vector3.one;
+            var cg = rt.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.DOKill();
+                cg.alpha = 1f;
+                cg.blocksRaycasts = true;
+            }
+        }
+
+        private void AnimatePlaqueEntrance(RectTransform rt, Vector2 targetPos, float delay)
+        {
+            if (rt == null) return;
             rt.anchoredPosition = new Vector2(targetPos.x, targetPos.y - 80f);
             rt.DOAnchorPosY(targetPos.y, 0.5f).SetDelay(delay).SetEase(Ease.OutBack);
         }

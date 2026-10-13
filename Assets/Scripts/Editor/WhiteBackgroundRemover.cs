@@ -22,7 +22,8 @@ namespace MasterPuzzleWall.Editor
                 "stone_dial_wheel",
                 "glowing_starter_gem",
                 "stone_twin_plug",
-                "game_title_logo"
+                "game_title_logo",
+                "ice_shelf_key_tile"
             };
 
             foreach (string baseName in targetFiles)
