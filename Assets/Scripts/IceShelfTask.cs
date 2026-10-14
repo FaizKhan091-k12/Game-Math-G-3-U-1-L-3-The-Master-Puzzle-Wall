@@ -46,7 +46,6 @@ namespace MasterPuzzleWall
             if (golemBot != null)
             {
                 golemBot.Cheer();
-                golemBot.Speak("Sort the three frozen keys from coldest (-4) up to warmest (+2)!", 5f);
             }
 
             // Initial scrambled arrangement: Slot 0 = 2, Slot 1 = -4, Slot 2 = -1

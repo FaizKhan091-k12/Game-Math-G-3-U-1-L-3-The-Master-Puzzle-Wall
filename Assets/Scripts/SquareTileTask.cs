@@ -65,7 +65,7 @@ namespace MasterPuzzleWall
             {
                 slotGreenGlow.DOKill();
                 slotGreenGlow.gameObject.SetActive(true);
-                slotGreenGlow.color = new Color(0.2f, 1f, 0.4f, 0.3f);
+                slotGreenGlow.color = new Color(0f, 0f, 0.0f, 0.3f);
                 slotGreenGlow.DOFade(0.85f, 0.9f).SetLoops(-1, LoopType.Yoyo);
             }
 

@@ -58,26 +58,33 @@ namespace MasterPuzzleWall
         private readonly string[] loudReaderPrompts = new string[]
         {
             "Look at the left side of the wall! The vertical frost slot is glowing. We need to drop the temperature to exactly 4 steps below the zero mark to clear the ice.",
-            "Now, look right below the slider at the horizontal stone shelf. Three code keys have appeared out of order. We must line them up from the smallest number to the biggest number. Slide the keys so they go from the lowest minus number up to the normal positive number!",
-            "Move your eyes to the lower middle part of the wall. A twin-prong socket is flashing! It needs an even number plug to match its double slots. Look at the tokens: 17 and 24. Which number ends in a balanced, even digit? Tap the right plug token!",
-            "Look over at the right side of the wall. A large square space has opened up! We need to fill it with a square number block that has the exact same number of rows and columns. Choose from the blocks below: 12, 16, or 18. Which block forms a perfect square shape?",
-            "Look right at the dead center of the wall! The big stone wheel is spinning with 18 slots on its ring. We must plug in a key peg that fits inside 18 perfectly with no empty spaces left behind. Look at pegs 4, 3, and 8. Which divides into 18 with nothing left over?",
+            "Now, look right below the slider at the horizontal stone shelf. Three code keys have appeared out of order.",
+            "Move your eyes to the lower middle part of the wall. A twin-prong socket is flashing! It needs an even number plug to match its double slots. Even numbers can always be cut into two equal parts with nothing left over.",
+            "Look at the wall. A large square space has opened up! We need to fill it with a square number block that has the exact same number of rows and columns",
+            "Look right at the dead center of the wall! The big stone wheel is spinning. It has 18 slots on its ring. We must plug in a key peg that fits inside 18 perfectly over and over with no empty spaces left behind.",
             "We are at the final code bar at the very bottom of the wall! The master puzzle window ends with a zero digit [ ___ 0 ]. What is always true about any whole number that ends with a zero? Choose the master rule plaque to open the wall!"
         };
 
-        private readonly string[] golemDialoguePrompts = new string[]
+        public string[] golemDialoguePrompts = new string[]
         {
             "Grab the glowing slider gem and pull it straight down past the white zero line!",
             "Sort the three stone keys from coldest to warmest !",
             "Tap the even number token that splits into two equal parts!",
-            "Which number block forms a perfect square grid? Drag it in!",
-            "Spin the wheel and pick the peg that divides cleanly into 18!",
+            "Which number block forms a perfect square grid?",
+            "Look at the pegs: 4, 3, and 8. Which number divides into 18 with nothing left over? Tap your factor peg!",
             "Any number ending in 0 divides cleanly by 10! Pick the master rule!"
         };
 
+        public string GetTaskInstruction(int taskIdx)
+        {
+            if (golemDialoguePrompts != null && taskIdx >= 0 && taskIdx < golemDialoguePrompts.Length)
+                return golemDialoguePrompts[taskIdx];
+            return "";
+        }
+
         private readonly string[] successFeedbacks = new string[]
         {
-            "Click! Slot locked! You set the track to -4. The minus sign shows we are below zero. The left wall zone is active!",
+            "Slot locked! You set the track to -4. The minus sign shows we are below zero. The left wall zone is active!",
             "Perfect match! -4 is the smallest, -1 is next, and 2 is the largest. The shelf glows gold!",
             "Pop! Power connected! 24 is an even number because it ends in a 4. The middle circuit is humming!",
             "Snap! A beautiful fit! 16 is a square number because 4 rows of 4 make a perfect square. The right wall panel is complete!",

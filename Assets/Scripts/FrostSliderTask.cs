@@ -29,7 +29,7 @@ namespace MasterPuzzleWall
         public GameObject targetRuneSealButton;
         public TextMeshProUGUI sealButtonText;
 
-        public const string GOLEM_INSTRUCTION = "Grab the glowing slider gem and pull it straight down past the white zero line! Slide it down until it sits on the minus number -4.";
+        public const string GOLEM_INSTRUCTION = "Grab the glowing slider gem and pull it straight down past the white zero line!";
 
         [Header("Track Limits")]
         public float topY = 190f;      // Represents +2
@@ -111,9 +111,10 @@ namespace MasterPuzzleWall
                 sliderGem.DOPunchScale(Vector3.one * 0.3f, 0.6f, 3, 0.4f);
             }
 
-            // Golem exact instruction
+            // Golem instruction from GameManager
             GameManager.Instance?.GolemBot?.SetConfused(false);
-            GameManager.Instance?.GolemBot?.Speak(GOLEM_INSTRUCTION, 0);
+            string instruction = GameManager.Instance != null ? GameManager.Instance.GetTaskInstruction(0) : GOLEM_INSTRUCTION;
+            GameManager.Instance?.GolemBot?.Speak(instruction, 0);
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -227,7 +228,8 @@ namespace MasterPuzzleWall
 
                 // Golem gets sad on wrong answer and repeats the exact instruction!
                 GameManager.Instance?.GolemBot?.SetConfused(true);
-                GameManager.Instance?.GolemBot?.Speak(GOLEM_INSTRUCTION, 0);
+                string wrongAnswerPrompt = GameManager.Instance != null ? GameManager.Instance.GetTaskInstruction(0) : GOLEM_INSTRUCTION;
+                GameManager.Instance?.GolemBot?.Speak(wrongAnswerPrompt, 0);
 
                 sliderGem.DOPunchPosition(new Vector3(10f, 0, 0), 0.35f, 5, 0.3f);
             }
