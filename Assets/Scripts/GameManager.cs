@@ -67,7 +67,7 @@ namespace MasterPuzzleWall
 
         private readonly string[] golemDialoguePrompts = new string[]
         {
-            "Grab the glowing slider gem and pull it straight down past the white zero line! Slide it down until it sits on the minus number -4.",
+            "Grab the glowing slider gem and pull it straight down past the white zero line!",
             "Sort the three stone keys from coldest to warmest !",
             "Tap the even number token that splits into two equal parts!",
             "Which number block forms a perfect square grid? Drag it in!",
