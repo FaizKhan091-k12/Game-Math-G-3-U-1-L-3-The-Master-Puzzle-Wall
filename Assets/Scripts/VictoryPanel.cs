@@ -100,10 +100,10 @@ namespace MasterPuzzleWall
             }
 
             GameManager.Instance?.GolemBot.Cheer();
-            GameManager.Instance?.GolemBot.Speak(
-                "Success! The master puzzle wall has opened wide! Every single track, slot, wheel, and panel was fixed perfectly. You are a Master Pattern Solver! Fantastic job!",
-                6.0f
-            );
+            string vMsg = (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.victoryDialogue))
+                ? GameManager.Instance.victoryDialogue
+                : "Success! The master puzzle wall has opened wide! Every single track, slot, wheel, and panel was fixed perfectly. You are a Master Pattern Solver! Fantastic job!";
+            GameManager.Instance?.GolemBot.Speak(vMsg, 6.0f);
         }
 
         public void ResetWallPositions()

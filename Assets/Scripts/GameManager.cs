@@ -45,7 +45,18 @@ namespace MasterPuzzleWall
 
         public int CurrentTaskIndex { get; private set; } = -1; // 0 to 5
 
-        private readonly string[] taskTitles = new string[]
+        [Header("--- Centralized Dialogue & Prompts (Edit Here Directly) ---")]
+        [System.NonSerialized]
+        public string mainMenuDialogue = "Welcome to the Master Puzzle Wall! Press the glowing starter gem to begin your run!";
+
+        [System.NonSerialized]
+        public string victoryDialogue = "Success! The master puzzle wall has opened wide! Every single track, slot, wheel, and panel was fixed perfectly. You are a Master Pattern Solver! Fantastic job!";
+
+        [System.NonSerialized]
+        public string failureDialogue = "Uh oh! The code numbers got mixed up, and the stone panels have locked back up. Let's look over our slider tracks and check our ending digits one more time. Press the orange button to restart the wall circuits!";
+
+        [System.NonSerialized]
+        public string[] taskTitles = new string[]
         {
             "TASK 1: THE FROST SLOT SLIDER",
             "TASK 2: THE ICE KEY SHELF",
@@ -55,16 +66,18 @@ namespace MasterPuzzleWall
             "TASK 6: THE MASTER BASE TEN CODE"
         };
 
-        private readonly string[] loudReaderPrompts = new string[]
+        [System.NonSerialized]
+        public string[] loudReaderPrompts = new string[]
         {
             "Look at the left side of the wall! The vertical frost slot is glowing. We need to drop the temperature to exactly 4 steps below the zero mark to clear the ice.",
             "Now, look right below the slider at the horizontal stone shelf. Three code keys have appeared out of order.",
             "Move your eyes to the lower middle part of the wall. A twin-prong socket is flashing! It needs an even number plug to match its double slots. Even numbers can always be cut into two equal parts with nothing left over.",
             "Look at the wall. A large square space has opened up! We need to fill it with a square number block that has the exact same number of rows and columns",
             "Look right at the dead center of the wall! The big stone wheel is spinning. It has 18 slots on its ring. We must plug in a key peg that fits inside 18 perfectly over and over with no empty spaces left behind.",
-            "We are at the final code bar at the very bottom of the wall! The master puzzle window ends with a zero digit [ ___ 0 ]. What is always true about any whole number that ends with a zero? Choose the master rule plaque to open the wall!"
+            "We are at the final code bar at the very bottom of the wall! The master puzzle window ends with a zero digit."
         };
 
+        [System.NonSerialized]
         public string[] golemDialoguePrompts = new string[]
         {
             "Grab the glowing slider gem and pull it straight down past the white zero line!",
@@ -82,13 +95,14 @@ namespace MasterPuzzleWall
             return "";
         }
 
-        private readonly string[] successFeedbacks = new string[]
+        [System.NonSerialized]
+        public string[] successFeedbacks = new string[]
         {
             "Slot locked! You set the track to -4. The minus sign shows we are below zero. The left wall zone is active!",
             "Perfect match! -4 is the smallest, -1 is next, and 2 is the largest. The shelf glows gold!",
             "Pop! Power connected! 24 is an even number because it ends in a 4. The middle circuit is humming!",
             "Snap! A beautiful fit! 16 is a square number because 4 rows of 4 make a perfect square. The right wall panel is complete!",
-            "Click! The wheel locks into place! 3 fits inside 18 exactly six times. You found the perfect factor peg!",
+            "The wheel locks into place! 3 fits inside 18 exactly six times. You found the perfect factor peg!",
             "Hooray! Any number ending in 0 divides cleanly by ten with no remainder. The final lock bar slides back!"
         };
 

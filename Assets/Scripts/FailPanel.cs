@@ -50,10 +50,10 @@ namespace MasterPuzzleWall
             }
 
             GameManager.Instance?.GolemBot.SetConfused(true);
-            GameManager.Instance?.GolemBot.Speak(
-                "Uh oh! The code numbers got mixed up, and the stone panels have locked back up. Let's look over our slider tracks and check our ending digits one more time. Press the orange button to restart the wall circuits!",
-                6.0f
-            );
+            string fMsg = (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.failureDialogue))
+                ? GameManager.Instance.failureDialogue
+                : "Uh oh! The code numbers got mixed up, and the stone panels have locked back up. Let's look over our slider tracks and check our ending digits one more time. Press the orange button to restart the wall circuits!";
+            GameManager.Instance?.GolemBot.Speak(fMsg, 6.0f);
         }
 
         private void OnRetryClicked()

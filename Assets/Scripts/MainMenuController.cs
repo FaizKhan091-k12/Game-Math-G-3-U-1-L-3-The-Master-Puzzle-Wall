@@ -97,10 +97,10 @@ namespace MasterPuzzleWall
             }
 
             GameManager.Instance?.GolemBot?.Wave();
-            GameManager.Instance?.GolemBot?.Speak(
-                "Welcome to the Master Puzzle Wall! Press the glowing starter gem to begin your run!",
-                4.5f
-            );
+            string welcomeMsg = (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.mainMenuDialogue))
+                ? GameManager.Instance.mainMenuDialogue
+                : "Welcome to the Master Puzzle Wall! Press the glowing starter gem to begin your run!";
+            GameManager.Instance?.GolemBot?.Speak(welcomeMsg, 4.5f);
         }
 
         private void OnPlayClicked()

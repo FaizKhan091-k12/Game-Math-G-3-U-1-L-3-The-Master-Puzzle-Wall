@@ -85,7 +85,7 @@ namespace MasterPuzzleWall
             {
                 codeBarGlow.DOKill();
                 codeBarGlow.gameObject.SetActive(true);
-                codeBarGlow.color = new Color(1f, 0.85f, 0.2f, 0.3f);
+                codeBarGlow.color = new Color(0f, 0.0f, 0.0f, 0.3f);
                 codeBarGlow.DOFade(0.85f, 0.8f).SetLoops(-1, LoopType.Yoyo);
             }
 

@@ -164,7 +164,6 @@ namespace MasterPuzzleWall
             if (golemBot != null)
             {
                 golemBot.Cheer();
-                golemBot.Speak("Perfect! -4 is coldest, -1 is next, and +2 is warmest! The shelf is unlocked!", 5.5f);
             }
 
             ScoreManager.Instance?.AddScore(150, "COLD TO WARM ALIGNED!");
